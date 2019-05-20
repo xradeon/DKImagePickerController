@@ -339,27 +339,8 @@ open class DKImageAssetExporter: DKImageBaseManager {
         return (auxiliaryDirectory, auxiliaryFilePath)
     }
     
-    private func generateTemporaryPath(with asset: DKAsset) -> URL {
-        let localIdentifier = asset.localIdentifier.data(using: .utf8)?.base64EncodedString() ?? "\(Date.timeIntervalSinceReferenceDate)"
-        var directoryName = localIdentifier
-        
-        if let originalAsset = asset.originalAsset {
-            if let modificationDate = originalAsset.modificationDate {
-                directoryName = directoryName + "/" + String(modificationDate.timeIntervalSinceReferenceDate)
-            }
-            
-            if asset.type == .photo {
-                directoryName = directoryName + "/" + String(self.configuration.imageExportPreset.rawValue)
-            } else {
-                #if swift(>=4.0)
-                directoryName = directoryName + "/" + self.configuration.videoExportPreset + self.configuration.avOutputFileType.rawValue
-                #else
-                directoryName = directoryName + "/" + self.configuration.videoExportPreset + self.configuration.avOutputFileType
-                #endif
-            }
-        }
-        
-        let directory = self.configuration.exportDirectory.appendingPathComponent(directoryName)
+    private func generateTemporaryPath(with asset: DKAsset) -> URL {       
+        let directory = self.configuration.exportDirectory
         
         if !FileManager.default.fileExists(atPath: directory.path) {
             try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true, attributes: nil)
