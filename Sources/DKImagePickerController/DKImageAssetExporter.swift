@@ -212,6 +212,11 @@ open class DKImageAssetExporter: DKImageBaseManager {
                 }
             }
             
+            let dateFormat = DateFormatter()
+            dateFormat.locale = Locale(identifier: "en_US_POSIX")
+            dateFormat.dateFormat = "yyyyMMddHHmmssSSS"
+            let baseName = dateFormat.string(from: Date())
+            
             for i in 0..<assets.count {
                 let asset = assets[i]
                 
@@ -225,6 +230,7 @@ open class DKImageAssetExporter: DKImageBaseManager {
                 
                 asset.localTemporaryPath = self.generateTemporaryPath(with: asset)
                 asset.error = nil
+                asset.fileName = "\(baseName)-\(i)."
                 
                 self.exportAsset(with: asset, requestID: requestID, progress: { progress in
                     asset.progress = progress
@@ -382,10 +388,10 @@ open class DKImageAssetExporter: DKImageBaseManager {
                         }
                         
                         if var imageData = data {
-                            if let info = info, let fileURL = info["PHImageFileURLKey"] as? NSURL, fileURL.lastPathComponent != nil {
-                                asset.fileName = fileURL.lastPathComponent!
+                            if let info = info, let fileURL = info["PHImageFileURLKey"] as? NSURL, fileURL.pathExtension != nil {
+                                asset.fileName = asset.fileName!.appending(fileURL.pathExtension!)
                             } else {
-                                return completion(nil)
+                                asset.fileName = asset.fileName!.appending("jpg")
                             }
                             
                             asset.localTemporaryPath = asset.localTemporaryPath?.appendingPathComponent(asset.fileName!)
@@ -464,12 +470,12 @@ open class DKImageAssetExporter: DKImageBaseManager {
             
             if let avAsset = avAsset {
                 if let avURLAsset = avAsset as? AVURLAsset {
-                    asset.fileName = avURLAsset.url.lastPathComponent
+                    asset.fileName = asset.fileName!.appending(avURLAsset.url.pathExtension)
                 } else if let composition = avAsset as? AVComposition,
                     let sourceURL = composition.tracks(withMediaType: mediaTypeVideo).first?.segments.first?.sourceURL {
-                    asset.fileName = sourceURL.lastPathComponent
+                    asset.fileName = asset.fileName!.appending(sourceURL.pathExtension)
                 } else {
-                    asset.fileName = "Video.mov"
+                    asset.fileName = asset.fileName!.appending("mov")
                 }
                 
                 asset.localTemporaryPath = asset.localTemporaryPath?.appendingPathComponent(asset.fileName!)
