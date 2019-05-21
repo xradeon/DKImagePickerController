@@ -225,11 +225,6 @@ open class DKImageAssetExporter: DKImageBaseManager {
                 
                 asset.localTemporaryPath = self.generateTemporaryPath(with: asset)
                 asset.error = nil
-                let dateFormat = DateFormatter()
-                dateFormat.locale = Locale(identifier: "en_US_POSIX")
-                dateFormat.dateFormat = "yyyyMMddHHmmssSSS"
-                let fileName = "\(dateFormat.string(from: Date()))-\(i).\(subpaths[0].pathExtension)"
-                asset.fileName = fileName
                 
                 self.exportAsset(with: asset, requestID: requestID, progress: { progress in
                     asset.progress = progress
@@ -388,9 +383,17 @@ open class DKImageAssetExporter: DKImageBaseManager {
                         
                         if var imageData = data {
                             if let info = info, let fileURL = info["PHImageFileURLKey"] as? NSURL {
-                                asset.fileName = fileURL.lastPathComponent ?? "Image"
+                                let dateFormat = DateFormatter()
+                                dateFormat.locale = Locale(identifier: "en_US_POSIX")
+                                dateFormat.dateFormat = "yyyyMMddHHmmssSSS"
+                                let fileName = "\(dateFormat.string(from: Date()))-\(i).\(fileURL.pathExtension ?? "jpg")"
+                                asset.fileName = fileName
                             } else {
-                                asset.fileName = "Image.jpg"
+                                let dateFormat = DateFormatter()
+                                dateFormat.locale = Locale(identifier: "en_US_POSIX")
+                                dateFormat.dateFormat = "yyyyMMddHHmmssSSS"
+                                let fileName = "\(dateFormat.string(from: Date()))-\(i).jpg"
+                                asset.fileName = fileName
                             }
                             
                             asset.localTemporaryPath = asset.localTemporaryPath?.appendingPathComponent(asset.fileName!)
@@ -468,14 +471,11 @@ open class DKImageAssetExporter: DKImageBaseManager {
             #endif
             
             if let avAsset = avAsset {
-                if let avURLAsset = avAsset as? AVURLAsset {
-                    asset.fileName = avURLAsset.url.lastPathComponent
-                } else if let composition = avAsset as? AVComposition,
-                    let sourceURL = composition.tracks(withMediaType: mediaTypeVideo).first?.segments.first?.sourceURL {
-                    asset.fileName = sourceURL.lastPathComponent
-                } else {
-                    asset.fileName = "Video.mov"
-                }
+                let dateFormat = DateFormatter()
+                dateFormat.locale = Locale(identifier: "en_US_POSIX")
+                dateFormat.dateFormat = "yyyyMMddHHmmssSSS"
+                let fileName = "\(dateFormat.string(from: Date()))-\(i).mov"
+                asset.fileName = fileName
                 
                 asset.localTemporaryPath = asset.localTemporaryPath?.appendingPathComponent(asset.fileName!)
                 
