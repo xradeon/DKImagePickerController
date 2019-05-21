@@ -382,18 +382,10 @@ open class DKImageAssetExporter: DKImageBaseManager {
                         }
                         
                         if var imageData = data {
-                            if let info = info, let fileURL = info["PHImageFileURLKey"] as? NSURL {
-                                let dateFormat = DateFormatter()
-                                dateFormat.locale = Locale(identifier: "en_US_POSIX")
-                                dateFormat.dateFormat = "yyyyMMddHHmmssSSS"
-                                let fileName = "\(dateFormat.string(from: Date()))-\(i).\(fileURL.pathExtension ?? "jpg")"
-                                asset.fileName = fileName
+                            if let info = info, let fileURL = info["PHImageFileURLKey"] as? NSURL, fileURL.lastPathComponent != nil {
+                                asset.fileName = fileURL.lastPathComponent!
                             } else {
-                                let dateFormat = DateFormatter()
-                                dateFormat.locale = Locale(identifier: "en_US_POSIX")
-                                dateFormat.dateFormat = "yyyyMMddHHmmssSSS"
-                                let fileName = "\(dateFormat.string(from: Date()))-\(i).jpg"
-                                asset.fileName = fileName
+                                return completion(nil)
                             }
                             
                             asset.localTemporaryPath = asset.localTemporaryPath?.appendingPathComponent(asset.fileName!)
@@ -471,11 +463,14 @@ open class DKImageAssetExporter: DKImageBaseManager {
             #endif
             
             if let avAsset = avAsset {
-                let dateFormat = DateFormatter()
-                dateFormat.locale = Locale(identifier: "en_US_POSIX")
-                dateFormat.dateFormat = "yyyyMMddHHmmssSSS"
-                let fileName = "\(dateFormat.string(from: Date()))-\(i).mov"
-                asset.fileName = fileName
+                if let avURLAsset = avAsset as? AVURLAsset {
+                    asset.fileName = avURLAsset.url.lastPathComponent
+                } else if let composition = avAsset as? AVComposition,
+                    let sourceURL = composition.tracks(withMediaType: mediaTypeVideo).first?.segments.first?.sourceURL {
+                    asset.fileName = sourceURL.lastPathComponent
+                } else {
+                    asset.fileName = "Video.mov"
+                }
                 
                 asset.localTemporaryPath = asset.localTemporaryPath?.appendingPathComponent(asset.fileName!)
                 
