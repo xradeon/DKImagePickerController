@@ -225,21 +225,11 @@ open class DKImageAssetExporter: DKImageBaseManager {
                 
                 asset.localTemporaryPath = self.generateTemporaryPath(with: asset)
                 asset.error = nil
-                
-                if let localTemporaryPath = asset.localTemporaryPath,
-                    let subpaths = try? FileManager.default.contentsOfDirectory(at: localTemporaryPath,
-                                                                                includingPropertiesForKeys: [],
-                                                                                options: .skipsHiddenFiles),
-                    subpaths.count > 0 {
-                    asset.localTemporaryPath = subpaths[0]
-                    let dateFormat = DateFormatter()
-                    dateFormat.locale = Locale(identifier: "en_US_POSIX")
-                    dateFormat.dateFormat = "yyyyMMddHHmmssSSS"
-                    let fileName = "\(dateFormat.string(from: Date()))-\(i).\(subpaths[0].pathExtension)"
-                    asset.fileName = fileName
-                    exportCompletionBlock(asset, nil)
-                    continue
-                }
+                let dateFormat = DateFormatter()
+                dateFormat.locale = Locale(identifier: "en_US_POSIX")
+                dateFormat.dateFormat = "yyyyMMddHHmmssSSS"
+                let fileName = "\(dateFormat.string(from: Date()))-\(i).\(subpaths[0].pathExtension)"
+                asset.fileName = fileName
                 
                 self.exportAsset(with: asset, requestID: requestID, progress: { progress in
                     asset.progress = progress
